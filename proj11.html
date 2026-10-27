@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JoinIn – Join real-life activities near you</title>
+<style>
+  :root{
+    --pitch:#0f5132; --pitch-dark:#0a3a24; --chalk:#f6f8f4; --bib:#ffd23f;
+    --ink:#14201a; --muted:#5b6b61; --line:#dfe6df; --white:#fff;
+    --football:#1f8a4c; --cricket:#2f6fdb; --run:#e4572e; --study:#8a4fd6; --other:#c28a00;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--chalk);color:var(--ink);line-height:1.55}
+  a{color:inherit}
+  :focus-visible{outline:3px solid var(--bib);outline-offset:2px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+
+  /* header */
+  header{background:var(--pitch-dark);color:var(--white)}
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+  .logo{font-weight:800;font-size:1.4rem;letter-spacing:-.02em;text-decoration:none}
+  .logo b{color:var(--bib)}
+  .nav a.link{color:#cfe5d8;text-decoration:none;margin-left:22px;font-size:.95rem}
+  .nav a.link:hover{color:var(--white)}
+
+  /* hero */
+  .hero{background:var(--pitch);color:var(--white);position:relative;overflow:hidden}
+  .hero::before{ /* pitch markings */
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(circle at 78% 50%,transparent 0 92px,rgba(255,255,255,.16) 92px 95px,transparent 95px),
+      linear-gradient(90deg,transparent calc(78% - 1.5px),rgba(255,255,255,.16) calc(78% - 1.5px) calc(78% + 1.5px),transparent calc(78% + 1.5px));
+    pointer-events:none}
+  .hero .wrap{position:relative;padding:72px 20px 80px}
+  .hero h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1.05;letter-spacing:-.03em;font-weight:800;max-width:14ch}
+  .hero p{margin-top:18px;max-width:46ch;color:#d4eadc;font-size:1.1rem}
+  .btn{display:inline-block;border:0;cursor:pointer;font:inherit;font-weight:700;text-decoration:none;
+       padding:13px 24px;border-radius:999px;background:var(--bib);color:var(--ink)}
+  .btn:hover{filter:brightness(.95)}
+  .btn.ghost{background:transparent;color:var(--white);border:2px solid rgba(255,255,255,.5);margin-left:10px}
+  .hero .cta{margin-top:30px}
+
+  /* sections */
+  section{padding:56px 0}
+  h2{font-size:1.8rem;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:24px}
+
+  /* filters */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .chip{border:1.5px solid var(--line);background:var(--white);padding:7px 16px;border-radius:999px;font:inherit;font-size:.92rem;cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--pitch);border-color:var(--pitch);color:var(--white)}
+
+  /* event rows */
+  .events{list-style:none;border-top:1px solid var(--line)}
+  .event{display:grid;grid-template-columns:auto 1fr auto;gap:6px 18px;align-items:center;
+         padding:18px 0 18px 16px;border-bottom:1px solid var(--line);border-left:6px solid var(--c,var(--other));
+         background:var(--white);margin-bottom:10px;border-radius:6px;border:1px solid var(--line);border-left:6px solid var(--c,var(--other))}
+  .event .emoji{font-size:2rem}
+  .event h3{font-size:1.1rem}
+  .meta{color:var(--muted);font-size:.92rem}
+  .meta span+span::before{content:"•";margin:0 8px;color:#b5c1b8}
+  .live{display:inline-flex;align-items:center;gap:6px;color:var(--run);font-weight:700;font-size:.85rem;margin-left:8px}
+  .live i{width:9px;height:9px;border-radius:50%;background:var(--run);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(228,87,46,.6)}100%{box-shadow:0 0 0 10px rgba(228,87,46,0)}}
+  .side{text-align:right}
+  .spots{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+  .join{border:2px solid var(--pitch);background:var(--pitch);color:var(--white);padding:8px 20px;border-radius:999px;font:inherit;font-weight:700;cursor:pointer}
+  .join.joined{background:var(--white);color:var(--pitch)}
+  .join:disabled{border-color:var(--line);background:var(--line);color:var(--muted);cursor:not-allowed}
+  .empty{padding:28px;text-align:center;color:var(--muted)}
+
+  /* post form */
+  #post{background:var(--white);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:720px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:1/-1}
+  label{font-weight:600;font-size:.92rem}
+  input,select{font:inherit;padding:11px 12px;border:1.5px solid #c9d4cb;border-radius:8px;background:var(--chalk)}
+  input:focus,select:focus{border-color:var(--pitch)}
+
+  /* how it works */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;list-style:none;counter-reset:s}
+  .steps li{counter-increment:s;border-top:4px solid var(--pitch);padding-top:14px}
+  .steps li::before{content:counter(s);display:inline-block;background:var(--bib);font-weight:800;width:30px;height:30px;line-height:30px;text-align:center;border-radius:50%;margin-bottom:10px}
+  .steps h3{margin-bottom:4px}
+  .steps p{color:var(--muted)}
+
+  .safety{margin-top:36px;padding:18px 20px;background:#fff7d6;border-radius:8px;max-width:720px}
+
+  footer{background:var(--pitch-dark);color:#bcd6c6;padding:28px 0;text-align:center;font-size:.92rem}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--white);
+         padding:12px 20px;border-radius:999px;transition:transform .25s;z-index:10}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:720px){
+    .steps,.formgrid{grid-template-columns:1fr}
+    .event{grid-template-columns:auto 1fr}
+    .side{grid-column:1/-1;text-align:left;display:flex;align-items:center;gap:14px}
+    .spots{margin:0}
+    .nav a.link{margin-left:14px}
+    .hero::before{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){.live i{animation:none}.toast{transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top">Join<b>In</b></a>
+    <nav>
+      <a class="link" href="#events">Nearby events</a>
+      <a class="link" href="#post">Post an event</a>
+      <a class="link" href="#how">How it works</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap">
+    <h1>Put the phone down. Join a game.</h1>
+    <p>See what people are playing, running, or studying near you right now, and join with one tap.</p>
+    <div class="cta">
+      <a class="btn" href="#events">See what’s on nearby</a>
+      <a class="btn ghost" href="#post">Post your own</a>
+    </div>
+  </div>
+</div>
+
+<section id="events">
+  <div class="wrap">
+    <h2>Happening near you</h2>
+    <p class="sub">Showing events within 3 km of Campus Gate 1.</p>
+    <div class="filters" id="filters" role="group" aria-label="Filter by activity"></div>
+    <ul class="events" id="list" style="border:0"></ul>
+  </div>
+</section>
+
+<section id="post">
+  <div class="wrap">
+    <h2>Start something</h2>
+    <p class="sub">Post your activity and people nearby can join it.</p>
+    <form class="formgrid" id="postForm">
+      <div class="field">
+        <label for="title">Event name</label>
+        <input id="title" required maxlength="40" placeholder="Evening football">
+      </div>
+      <div class="field">
+        <label for="type">Activity</label>
+        <select id="type"></select>
+      </div>
+      <div class="field">
+        <label for="place">Place</label>
+        <input id="place" required maxlength="40" placeholder="Main ground">
+      </div>
+      <div class="field">
+        <label for="time">Time</label>
+        <input id="time" type="time" required value="18:00">
+      </div>
+      <div class="field">
+        <label for="need">Players needed</label>
+        <input id="need" type="number" min="1" max="30" value="4" required>
+      </div>
+      <div class="field full">
+        <button class="btn" type="submit" style="background:var(--pitch);color:var(--white);justify-self:start">Post event</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="sub">From “I’m bored” to on the ground in minutes.</p>
+    <ol class="steps">
+      <li><h3>Post or browse</h3><p>Start an activity with a place, time, and number of players, or browse what’s already happening nearby.</p></li>
+      <li><h3>Tap to join</h3><p>The spot counter updates instantly, so everyone knows how many more are needed.</p></li>
+      <li><h3>Show up and play</h3><p>Meet in person, play, and build a local community offline.</p></li>
+    </ol>
+    <div class="safety">
+      <strong>Safety first.</strong> Events happen in public places only. Users sign up with a college email or phone number, and every event can be reported.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">JoinIn – InnoTech26 project. Free for players; venues and local brands support the platform.</div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  var TYPES = {
+    football:{label:"Football", emoji:"⚽", color:"var(--football)"},
+    cricket:{label:"Cricket", emoji:"🏏", color:"var(--cricket)"},
+    running:{label:"Running", emoji:"🏃", color:"var(--run)"},
+    study:{label:"Study group", emoji:"📚", color:"var(--study)"},
+    other:{label:"Other", emoji:"🎲", color:"var(--other)"}
+  };
+
+  var events = [
+    {id:1, title:"Evening football", type:"football", place:"Main ground", time:"17:30", dist:0.4, spots:3, live:true,  joined:false},
+    {id:2, title:"Box cricket, 6 a side", type:"cricket", place:"Sports complex", time:"18:00", dist:1.2, spots:5, live:false, joined:false},
+    {id:3, title:"5 km easy run", type:"running", place:"Park entrance", time:"06:30", dist:0.9, spots:8, live:false, joined:false},
+    {id:4, title:"DSA revision circle", type:"study", place:"Library lawn", time:"16:00", dist:0.2, spots:4, live:true,  joined:false},
+    {id:5, title:"Badminton doubles", type:"other", place:"Indoor court", time:"19:00", dist:2.1, spots:1, live:false, joined:false}
+  ];
+  var nextId = 6, filter = "all";
+
+  var list = document.getElementById("list");
+  var filtersEl = document.getElementById("filters");
+  var typeSel = document.getElementById("type");
+
+  // build filter chips and the form's activity dropdown
+  function chip(key, label){
+    var b = document.createElement("button");
+    b.className = "chip"; b.textContent = label; b.type = "button";
+    b.setAttribute("aria-pressed", key === filter);
+    b.onclick = function(){ filter = key; buildFilters(); render(); };
+    return b;
+  }
+  function buildFilters(){
+    filtersEl.innerHTML = "";
+    filtersEl.appendChild(chip("all", "All"));
+    for (var k in TYPES) filtersEl.appendChild(chip(k, TYPES[k].label));
+  }
+  for (var k in TYPES){
+    var o = document.createElement("option");
+    o.value = k; o.textContent = TYPES[k].label;
+    typeSel.appendChild(o);
+  }
+
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+  }
+
+  function toggleJoin(id){
+    var e = events.find(function(x){ return x.id === id; });
+    if (e.joined){ e.joined = false; e.spots++; toast("You left " + e.title); }
+    else if (e.spots > 0){ e.joined = true; e.spots--; toast("You joined " + e.title + "!"); }
+    render();
+  }
+
+  function fmt(t){
+    var p = t.split(":"), h = +p[0], ap = h >= 12 ? "PM" : "AM";
+    return ((h % 12) || 12) + ":" + p[1] + " " + ap;
+  }
+
+  function render(){
+    list.innerHTML = "";
+    var shown = events.filter(function(e){ return filter === "all" || e.type === filter; })
+                      .sort(function(a, b){ return a.dist - b.dist; });
+    if (!shown.length){
+      list.innerHTML = '<li class="empty">Nothing here yet. Be the first to post one.</li>';
+      return;
+    }
+    shown.forEach(function(e){
+      var T = TYPES[e.type];
+      var li = document.createElement("li");
+      li.className = "event"; li.style.setProperty("--c", T.color);
+      li.innerHTML =
+        '<div class="emoji" aria-hidden="true">' + T.emoji + '</div>' +
+        '<div><h3>' + e.title.replace(/</g,"&lt;") +
+          (e.live ? '<span class="live"><i></i>Live now</span>' : '') + '</h3>' +
+          '<div class="meta"><span>' + e.place.replace(/</g,"&lt;") + '</span><span>' + fmt(e.time) +
+          '</span><span>' + e.dist.toFixed(1) + ' km away</span></div></div>' +
+        '<div class="side"><div class="spots">' + (e.spots > 0 ? e.spots + ' spot' + (e.spots > 1 ? 's' : '') + ' left' : 'Full') + '</div>' +
+        '<button class="join' + (e.joined ? ' joined' : '') + '"' + (e.spots === 0 && !e.joined ? ' disabled' : '') + '>' +
+          (e.joined ? 'Joined' : (e.spots === 0 ? 'Full' : 'Join')) + '</button></div>';
+      li.querySelector("button").onclick = function(){ toggleJoin(e.id); };
+      list.appendChild(li);
+    });
+  }
+
+  document.getElementById("postForm").addEventListener("submit", function(ev){
+    ev.preventDefault();
+    events.push({
+      id: nextId++,
+      title: document.getElementById("title").value.trim(),
+      type: typeSel.value,
+      place: document.getElementById("place").value.trim(),
+      time: document.getElementById("time").value,
+      dist: 0.1,
+      spots: Math.max(1, +document.getElementById("need").value),
+      live: true, joined: false
+    });
+    filter = "all"; buildFilters(); render();
+    ev.target.reset();
+    toast("Event posted! Nearby users can see it now.");
+    document.getElementById("events").scrollIntoView();
+  });
+
+  buildFilters();
+  render();
+</script>
+</body>
+</html>

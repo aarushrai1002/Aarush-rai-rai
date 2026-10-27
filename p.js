@@ -1,0 +1,1 @@
+document.queryselector("hi").innnerHTML = " GOOD BYE " ;
